@@ -123,7 +123,7 @@ class Batalha:
         O primeiro valor deve ser igual a 0, correspondendo ao jogador.
         '''
         COUNT = num
-        TIME = 0.8
+        TIME = 1.3
         if COUNT == 0:
             self.player.action(self.inimigos)
             sleep(TIME)

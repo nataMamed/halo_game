@@ -85,12 +85,18 @@ class Personagem:
         self.normais = 0
         self.criticos = 0
 
-    def ataque(self, other: object):
+    def ataque(self, other: object, mod_externo=None, critico_ativado=True):
         '''
         Coordena mecanica basica de ataque e atualiza a vida restante do adversário.
         '''
-        mod = choices(self.mod_dano, self.taxa_falha)[0] # Sorteio para saber se erra, acerta ou é crítico
-                                                # A taxa_falha é um atributo das classes que herdarão esta.
+        if mod_externo:
+            mod = mod_externo 
+        else:   
+            if critico_ativado:
+                mod = choices(self.mod_dano, self.taxa_falha)[0] # Sorteio para saber se erra, acerta ou é crítico
+            else:
+                mod = choices(self.mod_dano[0:2], self.taxa_falha[0:2])[0]                                   # A taxa_falha é um atributo das classes que herdarão esta.
+
         if mod == 0:
             self.erros += 1
         if mod == 1:
@@ -159,9 +165,9 @@ class Personagem:
         '''
         ataques_totais = self.erros + self.normais + self.criticos
         print(f'Ataques de {self.nome}:')
-        print(f'    Erros: {self.erros/ataques_totais:.3f} %')
-        print(f'    Ataques normais: {self.normais/ataques_totais:.3f} %')
-        print(f'    Ataques críticos: {self.criticos/ataques_totais:.3f} %')
+        print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
+        print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')
+        print(f'    Ataques críticos: {100*(self.criticos/ataques_totais):.2f} %')
 
 class S_Grunt(Personagem):
     '''
@@ -274,6 +280,7 @@ class I_Grunt(Personagem):
         self.nome = f'{Personagem.VERMELHO}{self.tipo} {Personagem.RESET}'
         self.taxa_falha = (0.2, 0.62, 0.18)
 
+
     def avaliar_vantagem(self, dici:dict, simular = False):
         '''
         Parametros:
@@ -300,6 +307,7 @@ class I_Grunt(Personagem):
             self.taxa_falha = (0.45, 0.495, 0.055)
             print(f'{self.nome:>40} está em desvantagem.')
 
+
     def action(self, other, dici = {}, simular = False):
         '''
         Organiza as ações desse tipo de inimigo a serem execultadas em jogo.
@@ -307,7 +315,8 @@ class I_Grunt(Personagem):
         # dici = {} e simular = False são necessarios para gerar estatisticas 
         self.avaliar_vantagem(dici, simular)
         self.ataque(other)
-        
+
+
 class S_Jackel(Personagem):
     '''
     Subclasse de Personagem. Cria um objeto da classe S_Jackel
@@ -344,28 +353,29 @@ class S_Jackel(Personagem):
         self.nome = f'{self.VERMELHO}{self.tipo} {self.RESET}'
         self.taxa_falha = (0.3, 0.1785, 0.448)
  
-    def ataque(self, other:object, mod:int):
-        '''
-        Esse metodosobrescreveu o herdado para receber um valor
-        de modificador de dano externo, mod. Sorteia o tipo de ataque e ajusta a vida_atual do inimigo
-        '''
-        if self.vida_atual > 0:
-            if other.status_escudo == 'ativado':
-                dif = other.escudo_atual - self.dano * mod
-                if dif > 0:
-                    other.escudo_atual = dif
-                else:
-                    other.escudo_atual = 0
-                    other.status_escudo = 'destruido'
-                print(f'{self.nome:>40} causou {self.dano * mod} de dano ao escudo de {other.nome}')
 
-            else:
-                dif = other.vida_atual - self.dano * mod
-                if dif > 0:
-                    other.vida_atual = dif
-                else:
-                    other.vida_atual = 0
-                print(f'{self.nome:>40} causou {self.dano * mod} de dano a vida de {other.nome}')
+    # def ataque(self, other:object, mod:int):
+    #     '''
+    #     Esse metodosobrescreveu o herdado para receber um valor
+    #     de modificador de dano externo, mod. Sorteia o tipo de ataque e ajusta a vida_atual do inimigo
+    #     '''
+    #     if self.vida_atual > 0:
+    #         if other.status_escudo == 'ativado':
+    #             dif = other.escudo_atual - self.dano * mod
+    #             if dif > 0:
+    #                 other.escudo_atual = dif
+    #             else:
+    #                 other.escudo_atual = 0
+    #                 other.status_escudo = 'destruido'
+    #             print(f'{self.nome:>40} causou {self.dano * mod} de dano ao escudo de {other.nome}')
+
+    #         else:
+    #             dif = other.vida_atual - self.dano * mod
+    #             if dif > 0:
+    #                 other.vida_atual = dif
+    #             else:
+    #                 other.vida_atual = 0
+    #             print(f'{self.nome:>40} causou {self.dano * mod} de dano a vida de {other.nome}')
 
     def action(self, other:object, inim ={}):
         '''
@@ -380,10 +390,11 @@ class S_Jackel(Personagem):
             print(f'{self.nome:>40} ativou o escudo')
 
         elif mod != 0: # Teste para saber se haverá dois golpes ou nenhum.
-            self.ataque(other, mod) # Metodo ataque local para primeiro golpe.
-            super().ataque(other) # Evocação do metodo ataque da superclasse para o segundo golpe.  
+            self.ataque(other=other, mod_externo=mod) # Metodo ataque local para primeiro golpe.
+            self.ataque(other=other, critico_ativado=False) # Evocação do metodo ataque da superclasse para o segundo golpe.  
         else:
             print(f'{self.nome:>40} errou o primeiro ataque e não deferiu o segundo.')         
+
 
 class H_Jackel(Personagem):
     '''
@@ -419,7 +430,7 @@ class H_Jackel(Personagem):
         super().__init__(vida, esc)
         self.tipo = 'H_Jackel'
         self.nome = f'{self.VERMELHO}{self.tipo} {self.RESET}'
-        self.taxa_falha = (0.09, 0.3885, 0.448)
+        self.taxa_falha = (0.3, 0.1785, 0.448)
 
     def action(self, other:object, inim ={}):
         '''
@@ -430,8 +441,12 @@ class H_Jackel(Personagem):
             print(f'{self.nome:>40} ativou o escudo')
 
         else:
-            self.ataque(other)
-            self.ataque(other)
+            mod = choices(self.mod_dano, self.taxa_falha)[0]
+            self.ataque(other, mod)
+            if mod == 0: #  se errou ataca sem critco   
+                self.ataque(other, critico_ativado=False)
+            else:
+                self.ataque(other, mod)
 
 class Elite(Personagem):
     '''
@@ -463,7 +478,7 @@ class Elite(Personagem):
         super().__init__(vida)
         self.tipo = 'Elite'
         self.nome = f'{Personagem.VERMELHO}{self.tipo} {Personagem.RESET}'
-        self.taxa_falha = (0.3, 0.595, 0.105)
+        self.taxa_falha = (0.1, 0.3, 0.6)
     
     def action(self, other:object, inim ={}):
         '''
@@ -518,7 +533,7 @@ class Spartan(Personagem):
         super().__init__(vida, esc)
         self.tipo = 'Master Chief'
         self.nome = f'{Personagem.AZUL}{self.tipo}{Personagem.RESET}'
-        self.taxa_falha = (0.3, 0.595, 0.105)
+        self.taxa_falha = (0.05, 0.25, 0.70)
         self.municao_atual = 5
         self.municao_max = 5
 

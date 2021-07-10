@@ -57,10 +57,11 @@ Para uma melhor experiência ABRA a janela do TERMINAL ao MÁXIMO!{Jogo.RESET}'
                 resposta = input(f'Tente uma resposta valida\n~> ')
             else:
                 break
+        
         return resposta
     
     def estatisticas(self):
-        REPETICAO = 500
+        REPETICAO = 10000
         VIDA = 800 * REPETICAO
         
         personagens = (Spartan(),
@@ -103,9 +104,9 @@ Para uma melhor experiência ABRA a janela do TERMINAL ao MÁXIMO!{Jogo.RESET}'
         inicio ='Desenvolvedores:'
         braw ='Brawner Alves Albuquerque'
         # Completar nome do pessoal e APAGAR ESSE COMENTÁRIO
-        gisele = 'Gisele'
-        natan = 'Natã'
-        cat = 'Catarina'
+        gisele = 'Gisele Chaves Machado'
+        natan = 'Natã Carneiro Mamede Mendonça'
+        cat = 'Catarina Gomes Bezerra Paulo da Silva'
         msg =f'{inicio:^60}\n\n{Jogo.AMARELO}{braw:^60}\n{gisele:^60}\n{natan:^60}\n{cat:^60}{Jogo.RESET}'
         self.msg(msg)
 
@@ -115,6 +116,10 @@ Para uma melhor experiência ABRA a janela do TERMINAL ao MÁXIMO!{Jogo.RESET}'
         while True:
             resposta = self.menu()
             if resposta == '1':
+                for i in range(5, 0, -1):
+                    system('cls')
+                    print(f"O jogo será iniciado em {i}")
+                    sleep(1)
                 self.batalha.batalha()
                 print()
                 input('Pressione qualquer tecla para prosseguir.')
