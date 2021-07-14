@@ -1,9 +1,4 @@
-'''
-Implementações: 
-1) ajeitar as taxas de erro corretamente
-2) pensar em como evitar o critico do segundo tiro dos jackels
-3) como ajustar a estatistica dos jackels para expressar o dano*3
-'''
+
 # SIMBOLOS
 # SKULL = '🕱'
 # CORACAO = '♥'
@@ -85,6 +80,7 @@ class Personagem:
         self.normais = 0
         self.criticos = 0
 
+
     def ataque(self, other: object, mod_externo=None, critico_ativado=True):
         '''
         Coordena mecanica basica de ataque e atualiza a vida restante do adversário.
@@ -129,12 +125,16 @@ class Personagem:
                     print(f'{self.nome:>40} causou {self.dano * mod} de dano a vida de {other.nome}')
                 else:
                     print(f'{self.nome} causou {self.dano * mod} de dano a vida de {other.nome}')
-    
+
+        return mod
+
+
     def ativar_escudo(self):
         '''
         Muda status_escudo para 'ativado'
         '''
         self.status_escudo = 'ativado'
+
 
     def status(self): 
         '''
@@ -159,6 +159,7 @@ class Personagem:
             #o valor foi conseguido experimentalmente.
         return msg
 
+
     def statistic(self):
         '''
         Gera estatisticas de ataque
@@ -168,6 +169,8 @@ class Personagem:
         print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
         print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')
         print(f'    Ataques críticos: {100*(self.criticos/ataques_totais):.2f} %')
+
+
 
 class S_Grunt(Personagem):
     '''
@@ -205,6 +208,7 @@ class S_Grunt(Personagem):
         self.nome = f'{Personagem.VERMELHO}{self.tipo} {Personagem.RESET}'
         self.taxa_falha = (0.15, 0.595, 0.255)
 
+
     def avaliar_vantagem(self, dici: dict, simular = False):
         '''
         Parametros:
@@ -235,6 +239,7 @@ class S_Grunt(Personagem):
             self.taxa_falha = (0.6, 0.4)
             print(f'{self.nome:>40} está em desvantagem.')
 
+
     def action(self, other: object, dici = {}, simular = False):
         '''
         Organiza as ações desse tipo de inimigo a serem execultadas em jogo.
@@ -243,6 +248,8 @@ class S_Grunt(Personagem):
         self.avaliar_vantagem(dici, simular)
         self.ataque(other)
     
+
+
 class I_Grunt(Personagem):   
     '''
     Subclasse de Personagem. Cria um objeto da classe S_Grunt
@@ -317,6 +324,7 @@ class I_Grunt(Personagem):
         self.ataque(other)
 
 
+
 class S_Jackel(Personagem):
     '''
     Subclasse de Personagem. Cria um objeto da classe S_Jackel
@@ -339,7 +347,7 @@ class S_Jackel(Personagem):
 
     action(self, other): organiza as ações desse personagem.
     '''
-    def __init__(self, vida = 30, esc = 15):
+    def __init__(self, vida = 30, esc = 15, test=False):
         '''
         Constroi todos os atributos necessarios para criar um objeto S_Jackel.
 
@@ -351,31 +359,9 @@ class S_Jackel(Personagem):
         super().__init__(vida, esc)
         self.tipo = 'S_Jackel'
         self.nome = f'{self.VERMELHO}{self.tipo} {self.RESET}'
-        self.taxa_falha = (0.3, 0.1785, 0.448)
- 
+        self.critico_seguido_normal = 0
+        self.taxa_falha = (0.15, 0.085, 0.4480) if test else (0.35, 0.10, 0.4480)
 
-    # def ataque(self, other:object, mod:int):
-    #     '''
-    #     Esse metodosobrescreveu o herdado para receber um valor
-    #     de modificador de dano externo, mod. Sorteia o tipo de ataque e ajusta a vida_atual do inimigo
-    #     '''
-    #     if self.vida_atual > 0:
-    #         if other.status_escudo == 'ativado':
-    #             dif = other.escudo_atual - self.dano * mod
-    #             if dif > 0:
-    #                 other.escudo_atual = dif
-    #             else:
-    #                 other.escudo_atual = 0
-    #                 other.status_escudo = 'destruido'
-    #             print(f'{self.nome:>40} causou {self.dano * mod} de dano ao escudo de {other.nome}')
-
-    #         else:
-    #             dif = other.vida_atual - self.dano * mod
-    #             if dif > 0:
-    #                 other.vida_atual = dif
-    #             else:
-    #                 other.vida_atual = 0
-    #             print(f'{self.nome:>40} causou {self.dano * mod} de dano a vida de {other.nome}')
 
     def action(self, other:object, inim ={}):
         '''
@@ -383,17 +369,37 @@ class S_Jackel(Personagem):
         o primeiro ataque execulta em seguida um segundo ataque este herdado da Superclasse, caso contrario
         não ataca uma segunda vez.
         '''
-        mod = choices(self.mod_dano, self.taxa_falha)[0]
-        
+        # mod = choices(self.mod_dano, self.taxa_falha)[0]  
+         # Metodo ataque local para primeiro golpe.
         if self.status_escudo == 'desativado':
             self.ativar_escudo()
-            print(f'{self.nome:>40} ativou o escudo')
+            print(f'{self.nome:> 40} ativou o escudo')
 
-        elif mod != 0: # Teste para saber se haverá dois golpes ou nenhum.
-            self.ataque(other=other, mod_externo=mod) # Metodo ataque local para primeiro golpe.
-            self.ataque(other=other, critico_ativado=False) # Evocação do metodo ataque da superclasse para o segundo golpe.  
         else:
-            print(f'{self.nome:>40} errou o primeiro ataque e não deferiu o segundo.')         
+            primeiro_ataque = self.ataque(other=other)
+
+            if primeiro_ataque != 0: # Teste para saber se haverá dois golpes ou nenhum.
+                segundo_ataque = self.ataque(other=other, critico_ativado=False) 
+
+                critico_seguido_normal = (primeiro_ataque == 2 and segundo_ataque == 1)
+                if critico_seguido_normal:
+                    self.critico_seguido_normal +=1
+                # Evocação do metodo ataque da superclasse para o segundo golpe.  
+            else:
+                print(f'{self.nome:>40} errou o primeiro ataque e não deferiu o segundo.')         
+
+
+    def statistic(self):
+        '''
+        Gera estatisticas de ataque
+        '''
+        ataques_totais = self.erros + self.normais + self.criticos 
+        print(f'Ataques de {self.nome}:')
+        print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
+        print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')
+        print(f'    Ataques críticos: {100*(self.criticos/ataques_totais):.2f} %')
+        print(f'    Ataques críticos seguidos de um ataque normal: {100*(self.critico_seguido_normal/ataques_totais):.2f} %')
+
 
 
 class H_Jackel(Personagem):
@@ -418,7 +424,7 @@ class H_Jackel(Personagem):
 
     action(self, other): organiza as ações desse personagem. 
     '''
-    def __init__(self, vida = 40, esc = 30):
+    def __init__(self, vida = 40, esc = 30, test=False):
         '''
         Constroi todos os atributos necessarios para criar um objeto S_Jackel.
 
@@ -430,7 +436,9 @@ class H_Jackel(Personagem):
         super().__init__(vida, esc)
         self.tipo = 'H_Jackel'
         self.nome = f'{self.VERMELHO}{self.tipo} {self.RESET}'
-        self.taxa_falha = (0.3, 0.1785, 0.448)
+        self.critico_seguido_normal = 0
+        self.taxa_falha = (0.09, 0.3885, 0.4847) if test else (0.3, 0.1785, 0.448)
+
 
     def action(self, other:object, inim ={}):
         '''
@@ -441,12 +449,31 @@ class H_Jackel(Personagem):
             print(f'{self.nome:>40} ativou o escudo')
 
         else:
-            mod = choices(self.mod_dano, self.taxa_falha)[0]
-            self.ataque(other, mod)
-            if mod == 0: #  se errou ataca sem critco   
-                self.ataque(other, critico_ativado=False)
+            # mod = choices(self.mod_dano, self.taxa_falha)[0]
+            primeiro_ataque = self.ataque(other)
+            if primeiro_ataque == 0: #  se errou ataca sem critco   
+                segundo_ataque = self.ataque(other, critico_ativado=False)
             else:
-                self.ataque(other, mod)
+                segundo_ataque = self.ataque(other)
+
+            critico_seguido_normal = (primeiro_ataque == 2 and segundo_ataque == 1)
+
+            if critico_seguido_normal:
+                self.critico_seguido_normal +=1
+
+
+    def statistic(self):
+        '''
+        Gera estatisticas de ataque
+        '''
+        ataques_totais = self.erros + self.normais + self.criticos 
+        print(f'Ataques de {self.nome}:')
+        print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
+        print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')
+        print(f'    Ataques críticos: {100*(self.criticos/ataques_totais):.2f} %')
+        print(f'    Ataques críticos seguidos de um ataque normal: {100*(self.critico_seguido_normal/ataques_totais):.2f} %')
+
+
 
 class Elite(Personagem):
     '''
@@ -467,7 +494,7 @@ class Elite(Personagem):
     -----------------
     action(self, other): organiza as ações desse personagem.
     '''
-    def __init__(self, vida = 70):
+    def __init__(self, vida = 70, test=False):
         '''
         Constroi todos os atributos necessarios para criar um objeto Elite.
 
@@ -478,13 +505,16 @@ class Elite(Personagem):
         super().__init__(vida)
         self.tipo = 'Elite'
         self.nome = f'{Personagem.VERMELHO}{self.tipo} {Personagem.RESET}'
-        self.taxa_falha = (0.1, 0.3, 0.6)
+        self.taxa_falha =  (0.3, 0.5950, 0.105) if test else (0.1, 0.3, 0.6)
+
     
     def action(self, other:object, inim ={}):
         '''
         Organiza as ações desse tipo de inimigo a serem execultadas em jogo.
         '''
         self.ataque(other)
+
+
 
 class Spartan(Personagem):
     '''
@@ -547,6 +577,7 @@ class Spartan(Personagem):
             self.escudo_atual =  self.escudo_max
             print(f'{self.nome} regenerou escudo')
 
+
     def ataque(self, other:object, simular = False):
         '''
         Sobrescreve o metodo da classe Personagem adicionando uum condição que
@@ -561,11 +592,13 @@ class Spartan(Personagem):
                 super().ataque(other)
             self.municao_atual-=1
 
+
     def recarregar_arma(self):
         '''
         Faz: self.municao_atual = self.municao_max
         '''
         self.municao_atual = self.municao_max
+
 
     def status(self):
         '''
@@ -583,6 +616,7 @@ class Spartan(Personagem):
         r.append(f'{Personagem.VERDE}{BALA:}{Personagem.RESET} : {self.municao_atual}/{self.municao_max}{VAZIO:^10}')
         # Esse :^10 depois de self.municao_max é um ajuste para alinhar os icones durante a exibição
         return r # r é uma lista de tamanho 3.
+
 
     def action(self: object, inim:dict = {}):
         '''

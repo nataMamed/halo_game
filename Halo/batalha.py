@@ -124,6 +124,7 @@ class Batalha:
         '''
         COUNT = num
         TIME = 1.3
+        
         if COUNT == 0:
             self.player.action(self.inimigos)
             sleep(TIME)
