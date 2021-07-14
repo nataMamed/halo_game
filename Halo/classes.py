@@ -446,7 +446,7 @@ class H_Jackel(Personagem):
         '''
         if self.status_escudo == 'desativado':
             self.ativar_escudo()
-            print(f'{self.nome:>40} ativou o escudo')
+            # print(f'{self.nome:>40} ativou o escudo')
 
         else:
             # mod = choices(self.mod_dano, self.taxa_falha)[0]

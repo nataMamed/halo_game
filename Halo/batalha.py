@@ -165,6 +165,17 @@ class Batalha:
                 NUM = 0     
                 
         if winner == 'Você':
-            print(f'Parabêns! {winner} venceu!')
+            print(f"""Parabêns! {winner} venceu!
+----------------------------------------
+              .-=========-.
+              \\'-=======-'/
+              _|   .=.   |_
+             ((|   {{1}}   |))
+              \|   /|\   |/
+               \__ '`' __/
+                 _`) (`_
+               _/_______\_
+              /___________\\\n
+----------------------------------------""")
         else:
             print(f'{winner} venceram! Que pena, tente outra vez.')
