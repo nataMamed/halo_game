@@ -360,7 +360,7 @@ class S_Jackel(Personagem):
         self.tipo = 'S_Jackel'
         self.nome = f'{self.VERMELHO}{self.tipo} {self.RESET}'
         self.critico_seguido_normal = 0
-        self.taxa_falha = (0.15, 0.085, 0.4480) if test else (0.35, 0.10, 0.4480)
+        self.taxa_falha = (0.05, 0.045, 0.4480) if test else (0.35, 0.10, 0.4480)
 
 
     def action(self, other:object, inim ={}):
@@ -393,7 +393,7 @@ class S_Jackel(Personagem):
         '''
         Gera estatisticas de ataque
         '''
-        ataques_totais = self.erros + self.normais + self.criticos 
+        ataques_totais = self.erros + self.normais + self.criticos + self.critico_seguido_normal
         print(f'Ataques de {self.nome}:')
         print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
         print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')
@@ -451,10 +451,7 @@ class H_Jackel(Personagem):
         else:
             # mod = choices(self.mod_dano, self.taxa_falha)[0]
             primeiro_ataque = self.ataque(other)
-            if primeiro_ataque == 0: #  se errou ataca sem critco   
-                segundo_ataque = self.ataque(other, critico_ativado=False)
-            else:
-                segundo_ataque = self.ataque(other)
+            segundo_ataque = self.ataque(other, critico_ativado=False)
 
             critico_seguido_normal = (primeiro_ataque == 2 and segundo_ataque == 1)
 
@@ -466,7 +463,7 @@ class H_Jackel(Personagem):
         '''
         Gera estatisticas de ataque
         '''
-        ataques_totais = self.erros + self.normais + self.criticos 
+        ataques_totais = self.erros + self.normais + self.criticos + self.critico_seguido_normal
         print(f'Ataques de {self.nome}:')
         print(f'    Erros: {100*(self.erros/ataques_totais):.2f} %')
         print(f'    Ataques normais: {100*(self.normais/ataques_totais):.2f} %')

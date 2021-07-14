@@ -181,7 +181,7 @@ Para uma melhor experiência ABRA a janela do TERMINAL ao MÁXIMO!{Jogo.RESET}'
         """
             Da Start no jogo
         """
-        # self.intro()
+        self.intro()
         
         while True:
             resposta = self.menu()
